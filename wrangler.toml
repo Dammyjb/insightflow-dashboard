@@ -10,12 +10,12 @@ directory = "./frontend/dist"
 [[d1_databases]]
 binding = "DB"
 database_name = "insightflow-db"
-database_id = "your-database-id-here"
+database_id = "0462e778-08a2-43ce-94ea-6c996c0d92d5"
 
 # KV Namespace binding for caching and quick lookups
 [[kv_namespaces]]
 binding = "CACHE"
-id = "your-kv-namespace-id-here"
+id = "a711a36a6d5a48d18c3a2f13afc1a228"
 
 # AI binding for generating insights
 [ai]
