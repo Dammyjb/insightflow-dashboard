@@ -23,3 +23,8 @@ binding = "AI"
 
 [vars]
 ENVIRONMENT = "development"
+
+# Cron triggers for automated tasks
+# Runs daily at midnight UTC
+[triggers]
+crons = ["0 0 * * *"]

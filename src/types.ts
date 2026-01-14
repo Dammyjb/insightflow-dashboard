@@ -116,3 +116,53 @@ export interface AIInsight {
   recommendations: string[];
   confidence: number;
 }
+
+// ============================================
+// TRACKING TYPES (Data Collection)
+// ============================================
+
+export interface TrackSessionStartRequest {
+  userId?: string;
+  deviceType?: 'desktop' | 'mobile' | 'tablet';
+  browser?: string;
+  referrerSource?: string;
+  userAgent?: string;
+}
+
+export interface TrackSessionStartResponse {
+  sessionId: string;
+  userId: string;
+  startedAt: string;
+}
+
+export interface TrackActivityRequest {
+  sessionId: string;
+  activityName: string;
+  activityType: 'page_view' | 'action' | 'event';
+  pagePath: string;
+  durationSeconds?: number;
+  metadata?: Record<string, unknown>;
+}
+
+export interface TrackEventRequest {
+  sessionId: string;
+  userId: string;
+  eventType: 'page_view' | 'signup' | 'add_to_cart' | 'checkout' | 'purchase';
+  funnelStep: number;
+  completed?: boolean;
+  revenue?: number;
+  metadata?: Record<string, unknown>;
+}
+
+export interface TrackSessionEndRequest {
+  sessionId: string;
+}
+
+export interface TrackFeedbackRequest {
+  userId: string;
+  sessionId?: string;
+  feedbackType: 'rating' | 'comment' | 'nps' | 'survey';
+  rating?: number;
+  comment?: string;
+  pagePath?: string;
+}

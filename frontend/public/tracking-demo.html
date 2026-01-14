@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InsightFlow Tracking Demo</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f172a;
+      color: #f1f5f9;
+      padding: 2rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: #6366f1;
+      margin-bottom: 0.5rem;
+    }
+    .subtitle {
+      color: #94a3b8;
+      margin-bottom: 2rem;
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .card h2 {
+      margin-top: 0;
+      font-size: 1.1rem;
+      color: #e2e8f0;
+    }
+    button {
+      background: #6366f1;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin: 0.25rem;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #4f46e5;
+    }
+    button.success {
+      background: #22c55e;
+    }
+    button.success:hover {
+      background: #16a34a;
+    }
+    button.warning {
+      background: #eab308;
+      color: #0f172a;
+    }
+    button.warning:hover {
+      background: #ca8a04;
+    }
+    .log {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: monospace;
+      font-size: 0.85rem;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 1rem;
+    }
+    .log-entry {
+      padding: 0.25rem 0;
+      border-bottom: 1px solid #1e293b;
+    }
+    .log-entry:last-child {
+      border-bottom: none;
+    }
+    .log-time {
+      color: #64748b;
+    }
+    .log-type {
+      color: #6366f1;
+      font-weight: bold;
+    }
+    .session-info {
+      background: #0f172a;
+      padding: 1rem;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+    .session-info span {
+      color: #22c55e;
+    }
+    .input-group {
+      margin: 0.5rem 0;
+    }
+    input, select {
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #f1f5f9;
+      padding: 0.5rem;
+      border-radius: 4px;
+      margin-right: 0.5rem;
+    }
+    .status {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      background: #22c55e20;
+      color: #22c55e;
+    }
+  </style>
+</head>
+<body>
+  <h1>InsightFlow Tracking Demo</h1>
+  <p class="subtitle">Test the tracking SDK before deploying to production</p>
+
+  <!-- Session Info -->
+  <div class="card">
+    <h2>Session Information</h2>
+    <div class="session-info">
+      <div>Session ID: <span id="sessionId">Loading...</span></div>
+      <div>User ID: <span id="userId">Loading...</span></div>
+      <div>Status: <span class="status" id="status">Initializing</span></div>
+    </div>
+  </div>
+
+  <!-- Page View Tracking -->
+  <div class="card">
+    <h2>Page View Tracking</h2>
+    <p>Simulate navigating to different pages:</p>
+    <button onclick="trackPage('/home', 'Homepage')">Visit /home</button>
+    <button onclick="trackPage('/products', 'Products')">Visit /products</button>
+    <button onclick="trackPage('/products/item-1', 'Product Detail')">Visit /products/item-1</button>
+    <button onclick="trackPage('/cart', 'Shopping Cart')">Visit /cart</button>
+    <button onclick="trackPage('/checkout', 'Checkout')">Visit /checkout</button>
+  </div>
+
+  <!-- Action Tracking -->
+  <div class="card">
+    <h2>Action Tracking</h2>
+    <p>Track user actions:</p>
+    <button onclick="trackAction('Search', { metadata: { query: 'shoes' } })">Search</button>
+    <button onclick="trackAction('Filter Applied', { metadata: { filter: 'price' } })">Apply Filter</button>
+    <button onclick="trackAction('Add to Wishlist')">Add to Wishlist</button>
+    <button onclick="trackAction('Share Product')">Share</button>
+  </div>
+
+  <!-- Conversion Event Tracking -->
+  <div class="card">
+    <h2>Conversion Events</h2>
+    <p>Track conversion funnel events:</p>
+    <button onclick="trackEvent('signup')" class="success">Sign Up</button>
+    <button onclick="trackEvent('add_to_cart')" class="success">Add to Cart</button>
+    <button onclick="trackEvent('checkout')" class="success">Begin Checkout</button>
+    <button onclick="trackPurchase()" class="success">Complete Purchase ($99.99)</button>
+  </div>
+
+  <!-- Feedback Tracking -->
+  <div class="card">
+    <h2>Feedback Tracking</h2>
+    <div class="input-group">
+      <label>Rating (1-5):</label>
+      <input type="number" id="rating" min="1" max="5" value="5" style="width: 60px;">
+      <button onclick="trackRating()">Submit Rating</button>
+    </div>
+    <div class="input-group">
+      <label>NPS (0-10):</label>
+      <input type="number" id="nps" min="0" max="10" value="9" style="width: 60px;">
+      <button onclick="trackNPS()">Submit NPS</button>
+    </div>
+    <div class="input-group">
+      <input type="text" id="comment" placeholder="Enter feedback comment..." style="width: 300px;">
+      <button onclick="trackComment()">Submit Comment</button>
+    </div>
+  </div>
+
+  <!-- Event Log -->
+  <div class="card">
+    <h2>Event Log</h2>
+    <button onclick="clearLog()" class="warning">Clear Log</button>
+    <div class="log" id="log">
+      <div class="log-entry"><span class="log-time">--:--:--</span> Waiting for initialization...</div>
+    </div>
+  </div>
+
+  <!-- Load Tracking SDK -->
+  <script src="/insightflow-tracker.js"></script>
+  <script>
+    // Initialize tracker with debug mode
+    InsightFlow.init({
+      endpoint: '/api/track',
+      autoTrackPageViews: false, // We'll track manually for demo
+      debug: true,
+    });
+
+    // Update UI once initialized
+    setTimeout(() => {
+      document.getElementById('sessionId').textContent = InsightFlow.sessionId || 'N/A';
+      document.getElementById('userId').textContent = InsightFlow.userId || 'N/A';
+      document.getElementById('status').textContent = InsightFlow.initialized ? 'Connected' : 'Error';
+      log('SDK', 'InsightFlow initialized successfully');
+    }, 1000);
+
+    // Logging helper
+    function log(type, message) {
+      const logEl = document.getElementById('log');
+      const time = new Date().toLocaleTimeString();
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      entry.innerHTML = `<span class="log-time">${time}</span> <span class="log-type">[${type}]</span> ${message}`;
+      logEl.insertBefore(entry, logEl.firstChild);
+    }
+
+    function clearLog() {
+      document.getElementById('log').innerHTML = '';
+      log('System', 'Log cleared');
+    }
+
+    // Track page view
+    async function trackPage(path, name) {
+      await InsightFlow.trackPageView({ pagePath: path, activityName: name });
+      log('PageView', `Tracked: ${name} (${path})`);
+    }
+
+    // Track action
+    async function trackAction(name, options = {}) {
+      await InsightFlow.trackAction(name, options);
+      log('Action', `Tracked: ${name}`);
+    }
+
+    // Track conversion event
+    async function trackEvent(type) {
+      await InsightFlow.trackEvent(type, { completed: true });
+      log('Event', `Tracked conversion: ${type}`);
+    }
+
+    // Track purchase with revenue
+    async function trackPurchase() {
+      await InsightFlow.trackEvent('purchase', {
+        completed: true,
+        revenue: 99.99,
+        metadata: { orderId: 'ORD-' + Math.random().toString(36).slice(2, 8).toUpperCase() }
+      });
+      log('Event', 'Tracked purchase: $99.99');
+    }
+
+    // Track rating feedback
+    async function trackRating() {
+      const rating = parseInt(document.getElementById('rating').value);
+      await InsightFlow.trackFeedback('rating', { rating });
+      log('Feedback', `Tracked rating: ${rating}/5`);
+    }
+
+    // Track NPS feedback
+    async function trackNPS() {
+      const nps = parseInt(document.getElementById('nps').value);
+      await InsightFlow.trackFeedback('nps', { rating: nps });
+      log('Feedback', `Tracked NPS: ${nps}/10`);
+    }
+
+    // Track comment feedback
+    async function trackComment() {
+      const comment = document.getElementById('comment').value;
+      if (!comment) {
+        log('Error', 'Please enter a comment');
+        return;
+      }
+      await InsightFlow.trackFeedback('comment', { comment });
+      log('Feedback', `Tracked comment: "${comment.slice(0, 30)}..."`);
+      document.getElementById('comment').value = '';
+    }
+  </script>
+</body>
+</html>
