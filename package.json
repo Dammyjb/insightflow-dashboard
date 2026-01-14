@@ -1,0 +1,26 @@
+{
+  "name": "insightflow-dashboard",
+  "version": "1.0.0",
+  "description": "User feedback analytics dashboard with User Journey and Conversion Rate insights",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "build": "npm run build:frontend && npm run build:worker",
+    "build:frontend": "cd frontend && npm run build",
+    "build:worker": "wrangler deploy --dry-run",
+    "deploy": "npm run build:frontend && wrangler deploy",
+    "db:init": "wrangler d1 execute insightflow-db --local --file=./schema.sql",
+    "db:seed": "wrangler d1 execute insightflow-db --local --file=./seed.sql",
+    "db:init:remote": "wrangler d1 execute insightflow-db --remote --file=./schema.sql",
+    "db:seed:remote": "wrangler d1 execute insightflow-db --remote --file=./seed.sql",
+    "setup": "npm install && cd frontend && npm install && cd .. && npm run db:init && npm run db:seed"
+  },
+  "dependencies": {
+    "hono": "^4.3.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240512.0",
+    "typescript": "^5.4.5",
+    "wrangler": "^3.57.0"
+  }
+}

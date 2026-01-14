@@ -1,0 +1,25 @@
+name = "insightflow-dashboard"
+main = "src/index.ts"
+compatibility_date = "2024-05-12"
+
+# Serve static assets from the frontend build
+[assets]
+directory = "./frontend/dist"
+
+# D1 Database binding for storing user journeys and conversion data
+[[d1_databases]]
+binding = "DB"
+database_name = "insightflow-db"
+database_id = "your-database-id-here"
+
+# KV Namespace binding for caching and quick lookups
+[[kv_namespaces]]
+binding = "CACHE"
+id = "your-kv-namespace-id-here"
+
+# AI binding for generating insights
+[ai]
+binding = "AI"
+
+[vars]
+ENVIRONMENT = "development"
