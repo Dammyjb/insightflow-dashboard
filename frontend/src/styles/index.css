@@ -9,10 +9,10 @@
    Theme Variables
    =================================== */
 :root {
-  /* Brand Colors */
-  --brand-primary: #6366f1;
-  --brand-secondary: #8b5cf6;
-  --brand-accent: #f6821f;
+  /* Brand Colors - GreenLeaf */
+  --brand-primary: #10b981;
+  --brand-secondary: #34d399;
+  --brand-accent: #059669;
 
   /* Semantic Colors */
   --success: #10b981;
@@ -1212,6 +1212,141 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-dim);
+}
+
+/* ===================================
+   Logo Styling
+   =================================== */
+.logo-text-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.logo-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: -2px;
+}
+
+/* ===================================
+   Recommendations Card
+   =================================== */
+.recommendations-card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.recommendations-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.recommendations-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--success);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.recommendations-header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.recommendations-subtitle {
+  font-size: 0.857rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.recommendations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.recommendation-item {
+  display: flex;
+  gap: 14px;
+  padding: 16px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--border-default);
+  transition: var(--transition-fast);
+}
+
+.recommendation-item:hover {
+  background: var(--bg-hover);
+}
+
+.recommendation-item.high {
+  border-left-color: var(--danger);
+}
+
+.recommendation-item.medium {
+  border-left-color: var(--warning);
+}
+
+.recommendation-item.low {
+  border-left-color: var(--success);
+}
+
+.recommendation-priority {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  height: fit-content;
+}
+
+.recommendation-item.high .recommendation-priority {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.recommendation-item.medium .recommendation-priority {
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+
+.recommendation-item.low .recommendation-priority {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.recommendation-content h4 {
+  font-size: 0.928rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 6px 0;
+}
+
+.recommendation-content p {
+  font-size: 0.857rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
 }
 
 /* ===================================

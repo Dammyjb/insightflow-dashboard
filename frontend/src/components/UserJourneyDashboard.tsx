@@ -53,6 +53,9 @@ function UserJourneyDashboard({ compact = false }: UserJourneyDashboardProps) {
 
   if (!metrics) return null;
 
+  // Generate recommendations based on actual metrics
+  const recommendations = generateRecommendations(metrics);
+
   // Time per Activity Bar Chart
   const timePerActivityData = {
     labels: metrics.timePerActivity.slice(0, 6).map((a) => a.activity),
@@ -60,17 +63,17 @@ function UserJourneyDashboard({ compact = false }: UserJourneyDashboardProps) {
       {
         label: 'Avg Duration (seconds)',
         data: metrics.timePerActivity.slice(0, 6).map((a) => a.avgDuration),
-        backgroundColor: 'rgba(99, 102, 241, 0.8)',
-        borderColor: 'rgb(99, 102, 241)',
+        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+        borderColor: 'rgb(16, 185, 129)',
         borderWidth: 1,
-        borderRadius: 4,
+        borderRadius: 6,
       },
     ],
   };
 
   // Drop-off Points Chart
   const dropOffData = {
-    labels: metrics.dropOffPoints.slice(0, 5).map((d) => d.page.replace('/', '')),
+    labels: metrics.dropOffPoints.slice(0, 5).map((d) => d.page.replace('/', '') || 'home'),
     datasets: [
       {
         label: 'Drop-off Count',
@@ -83,6 +86,7 @@ function UserJourneyDashboard({ compact = false }: UserJourneyDashboardProps) {
           'rgba(59, 130, 246, 0.8)',
         ],
         borderWidth: 0,
+        borderRadius: 6,
       },
     ],
   };
@@ -94,11 +98,11 @@ function UserJourneyDashboard({ compact = false }: UserJourneyDashboardProps) {
       {
         data: metrics.activityBreakdown.slice(0, 5).map((a) => a.count),
         backgroundColor: [
-          'rgba(99, 102, 241, 0.8)',
-          'rgba(139, 92, 246, 0.8)',
-          'rgba(168, 85, 247, 0.8)',
-          'rgba(217, 70, 239, 0.8)',
-          'rgba(236, 72, 153, 0.8)',
+          'rgba(16, 185, 129, 0.8)',
+          'rgba(52, 211, 153, 0.8)',
+          'rgba(110, 231, 183, 0.8)',
+          'rgba(167, 243, 208, 0.8)',
+          'rgba(209, 250, 229, 0.8)',
         ],
         borderWidth: 0,
       },
@@ -113,7 +117,7 @@ function UserJourneyDashboard({ compact = false }: UserJourneyDashboardProps) {
         display: !compact,
         position: 'bottom' as const,
         labels: {
-          color: '#64748b',
+          color: '#71717a',
           padding: 12,
           font: { size: 11 },
         },
@@ -122,11 +126,11 @@ function UserJourneyDashboard({ compact = false }: UserJourneyDashboardProps) {
     scales: {
       x: {
         grid: { display: false },
-        ticks: { color: '#64748b', font: { size: 10 } },
+        ticks: { color: '#71717a', font: { size: 10 } },
       },
       y: {
-        grid: { color: 'rgba(148, 163, 184, 0.1)' },
-        ticks: { color: '#64748b', font: { size: 10 } },
+        grid: { color: 'rgba(113, 113, 122, 0.1)' },
+        ticks: { color: '#71717a', font: { size: 10 } },
       },
     },
   };
@@ -138,7 +142,7 @@ function UserJourneyDashboard({ compact = false }: UserJourneyDashboardProps) {
       legend: {
         display: !compact,
         position: 'right' as const,
-        labels: { color: '#64748b', padding: 8, font: { size: 10 } },
+        labels: { color: '#71717a', padding: 8, font: { size: 10 } },
       },
     },
     cutout: '65%',
@@ -147,9 +151,9 @@ function UserJourneyDashboard({ compact = false }: UserJourneyDashboardProps) {
   return (
     <div className={`dashboard ${compact ? 'compact' : ''}`}>
       <div className="dashboard-header">
-        <h2>User Journey Dashboard</h2>
+        <h2>Customer Journey</h2>
         <p className="dashboard-subtitle">
-          Track user interactions, engagement time, and drop-off points
+          How shoppers navigate through GreenLeaf's sustainable marketplace
         </p>
       </div>
 
@@ -163,7 +167,7 @@ function UserJourneyDashboard({ compact = false }: UserJourneyDashboardProps) {
           </div>
           <div className="metric-info">
             <span className="metric-value">{metrics.totalSessions.toLocaleString()}</span>
-            <span className="metric-label">Total Sessions</span>
+            <span className="metric-label">Active Shoppers</span>
           </div>
         </div>
 
@@ -178,11 +182,11 @@ function UserJourneyDashboard({ compact = false }: UserJourneyDashboardProps) {
           </div>
           <div className="metric-info">
             <span className="metric-value">{formatDuration(metrics.avgSessionDuration)}</span>
-            <span className="metric-label">Avg Session</span>
+            <span className="metric-label">Avg Browse Time</span>
           </div>
         </div>
 
-        <div className="metric-card warning">
+        <div className={`metric-card ${metrics.churnRate > 20 ? 'warning' : ''}`}>
           <div className="metric-icon churn">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
               <path
@@ -193,7 +197,7 @@ function UserJourneyDashboard({ compact = false }: UserJourneyDashboardProps) {
           </div>
           <div className="metric-info">
             <span className="metric-value">{metrics.churnRate}%</span>
-            <span className="metric-label">Churn Rate</span>
+            <span className="metric-label">Lost Customers</span>
           </div>
         </div>
 
@@ -208,7 +212,7 @@ function UserJourneyDashboard({ compact = false }: UserJourneyDashboardProps) {
           </div>
           <div className="metric-info">
             <span className="metric-value">{metrics.dropOffPoints.length}</span>
-            <span className="metric-label">Drop-off Points</span>
+            <span className="metric-label">Exit Points</span>
           </div>
         </div>
       </div>
@@ -216,7 +220,7 @@ function UserJourneyDashboard({ compact = false }: UserJourneyDashboardProps) {
       {/* Charts */}
       <div className={`charts-grid ${compact ? 'compact-grid' : ''}`}>
         <div className="chart-card">
-          <h3>Time per Activity</h3>
+          <h3>Time Spent by Activity</h3>
           <div className="chart-container">
             <Bar data={timePerActivityData} options={chartOptions} />
           </div>
@@ -224,7 +228,7 @@ function UserJourneyDashboard({ compact = false }: UserJourneyDashboardProps) {
 
         {!compact && (
           <div className="chart-card">
-            <h3>Drop-off Points</h3>
+            <h3>Where Customers Leave</h3>
             <div className="chart-container">
               <Bar
                 data={dropOffData}
@@ -238,30 +242,58 @@ function UserJourneyDashboard({ compact = false }: UserJourneyDashboardProps) {
         )}
 
         <div className="chart-card">
-          <h3>Activity Breakdown</h3>
+          <h3>Shopping Behavior</h3>
           <div className="chart-container doughnut">
             <Doughnut data={activityBreakdownData} options={doughnutOptions} />
           </div>
         </div>
       </div>
 
+      {/* Recommendations Section */}
+      {!compact && recommendations.length > 0 && (
+        <div className="recommendations-card">
+          <div className="recommendations-header">
+            <div className="recommendations-icon">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div>
+              <h3>What You Can Do</h3>
+              <p className="recommendations-subtitle">Based on your customer journey data</p>
+            </div>
+          </div>
+          <div className="recommendations-list">
+            {recommendations.map((rec, i) => (
+              <div key={i} className={`recommendation-item ${rec.priority}`}>
+                <div className="recommendation-priority">{rec.priority}</div>
+                <div className="recommendation-content">
+                  <h4>{rec.title}</h4>
+                  <p>{rec.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Drop-off Table (only in full view) */}
       {!compact && (
         <div className="data-table-card">
-          <h3>Top Drop-off Points</h3>
+          <h3>Exit Point Analysis</h3>
           <table className="data-table">
             <thead>
               <tr>
                 <th>Page</th>
-                <th>Drop-off Count</th>
-                <th>Drop-off Rate</th>
-                <th>Status</th>
+                <th>Exits</th>
+                <th>Exit Rate</th>
+                <th>Priority</th>
               </tr>
             </thead>
             <tbody>
               {metrics.dropOffPoints.slice(0, 5).map((point, i) => (
                 <tr key={i}>
-                  <td className="page-cell">{point.page}</td>
+                  <td className="page-cell">{point.page || '/home'}</td>
                   <td>{point.dropOffCount}</td>
                   <td>{point.dropOffRate}%</td>
                   <td>
@@ -275,10 +307,10 @@ function UserJourneyDashboard({ compact = false }: UserJourneyDashboardProps) {
                       }`}
                     >
                       {point.dropOffRate > 20
-                        ? 'Critical'
+                        ? 'Fix Now'
                         : point.dropOffRate > 10
-                        ? 'Needs Attention'
-                        : 'Good'}
+                        ? 'Monitor'
+                        : 'Healthy'}
                     </span>
                   </td>
                 </tr>
@@ -296,6 +328,70 @@ function formatDuration(seconds: number): string {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
   return `${mins}m ${secs}s`;
+}
+
+interface Recommendation {
+  priority: 'high' | 'medium' | 'low';
+  title: string;
+  description: string;
+}
+
+function generateRecommendations(metrics: any): Recommendation[] {
+  const recommendations: Recommendation[] = [];
+
+  // Check churn rate
+  if (metrics.churnRate > 25) {
+    recommendations.push({
+      priority: 'high',
+      title: 'Re-engage inactive customers',
+      description: `${metrics.churnRate}% of customers haven't returned. Send personalized "We miss you" emails with a 15% discount on their favorite eco-categories.`,
+    });
+  } else if (metrics.churnRate > 15) {
+    recommendations.push({
+      priority: 'medium',
+      title: 'Improve retention with loyalty perks',
+      description: 'Start a "Green Points" program where repeat purchases earn credits toward carbon offsets or free products.',
+    });
+  }
+
+  // Check session duration
+  if (metrics.avgSessionDuration < 300) {
+    recommendations.push({
+      priority: 'medium',
+      title: 'Keep shoppers engaged longer',
+      description: 'Add sustainability stories to product pages. Customers who read impact stories spend 40% more time browsing.',
+    });
+  }
+
+  // Check drop-off points
+  const cartDropOff = metrics.dropOffPoints.find((d: any) => d.page === '/cart');
+  if (cartDropOff && cartDropOff.dropOffRate > 15) {
+    recommendations.push({
+      priority: 'high',
+      title: 'Reduce cart abandonment',
+      description: `${cartDropOff.dropOffRate}% leave at cart. Show shipping threshold ("$12 away from free carbon-neutral shipping") and add express checkout.`,
+    });
+  }
+
+  const pricingDropOff = metrics.dropOffPoints.find((d: any) => d.page === '/pricing');
+  if (pricingDropOff && pricingDropOff.dropOffRate > 10) {
+    recommendations.push({
+      priority: 'medium',
+      title: 'Simplify subscription options',
+      description: 'Too many leave at pricing. Test showing just 2 plans instead of 4, with a clear "Most Popular" badge.',
+    });
+  }
+
+  // If browse time is good, suggest upsells
+  if (metrics.avgSessionDuration > 600) {
+    recommendations.push({
+      priority: 'low',
+      title: 'Capitalize on engaged browsers',
+      description: 'Your customers browse for a while—add a "Complete the Look" section with sustainable bundles on product pages.',
+    });
+  }
+
+  return recommendations.slice(0, 3);
 }
 
 export default UserJourneyDashboard;

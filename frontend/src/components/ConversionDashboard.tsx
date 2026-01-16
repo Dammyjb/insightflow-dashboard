@@ -53,25 +53,28 @@ function ConversionDashboard({ compact = false }: ConversionDashboardProps) {
 
   if (!metrics) return null;
 
+  // Generate recommendations based on actual metrics
+  const recommendations = generateRecommendations(metrics);
+
   // Funnel Chart Data
   const funnelData = {
     labels: metrics.funnelSteps.map((s) => s.step),
     datasets: [
       {
-        label: 'Users Entered',
+        label: 'Visitors',
         data: metrics.funnelSteps.map((s) => s.entered),
-        backgroundColor: 'rgba(99, 102, 241, 0.8)',
-        borderColor: 'rgb(99, 102, 241)',
+        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+        borderColor: 'rgb(16, 185, 129)',
         borderWidth: 1,
-        borderRadius: 4,
+        borderRadius: 6,
       },
       {
-        label: 'Users Completed',
+        label: 'Completed',
         data: metrics.funnelSteps.map((s) => s.completed),
-        backgroundColor: 'rgba(34, 197, 94, 0.8)',
-        borderColor: 'rgb(34, 197, 94)',
+        backgroundColor: 'rgba(52, 211, 153, 0.8)',
+        borderColor: 'rgb(52, 211, 153)',
         borderWidth: 1,
-        borderRadius: 4,
+        borderRadius: 6,
       },
     ],
   };
@@ -89,19 +92,19 @@ function ConversionDashboard({ compact = false }: ConversionDashboardProps) {
           .slice(0, 14)
           .reverse()
           .map((d) => d.rate),
-        borderColor: 'rgb(99, 102, 241)',
-        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+        borderColor: 'rgb(16, 185, 129)',
+        backgroundColor: 'rgba(16, 185, 129, 0.1)',
         fill: true,
         tension: 0.4,
         pointRadius: 3,
-        pointBackgroundColor: 'rgb(99, 102, 241)',
+        pointBackgroundColor: 'rgb(16, 185, 129)',
       },
     ],
   };
 
   // Bounce vs Conversion Doughnut
   const bounceVsConversionData = {
-    labels: ['Bounced', 'Engaged', 'Converted'],
+    labels: ['Left Early', 'Browsed Only', 'Purchased'],
     datasets: [
       {
         data: [
@@ -112,7 +115,7 @@ function ConversionDashboard({ compact = false }: ConversionDashboardProps) {
         backgroundColor: [
           'rgba(239, 68, 68, 0.8)',
           'rgba(234, 179, 8, 0.8)',
-          'rgba(34, 197, 94, 0.8)',
+          'rgba(16, 185, 129, 0.8)',
         ],
         borderWidth: 0,
       },
@@ -127,7 +130,7 @@ function ConversionDashboard({ compact = false }: ConversionDashboardProps) {
         display: !compact,
         position: 'bottom' as const,
         labels: {
-          color: '#64748b',
+          color: '#71717a',
           padding: 12,
           font: { size: 11 },
         },
@@ -136,11 +139,11 @@ function ConversionDashboard({ compact = false }: ConversionDashboardProps) {
     scales: {
       x: {
         grid: { display: false },
-        ticks: { color: '#64748b', font: { size: 10 } },
+        ticks: { color: '#71717a', font: { size: 10 } },
       },
       y: {
-        grid: { color: 'rgba(148, 163, 184, 0.1)' },
-        ticks: { color: '#64748b', font: { size: 10 } },
+        grid: { color: 'rgba(113, 113, 122, 0.1)' },
+        ticks: { color: '#71717a', font: { size: 10 } },
       },
     },
   };
@@ -164,7 +167,7 @@ function ConversionDashboard({ compact = false }: ConversionDashboardProps) {
       legend: {
         display: !compact,
         position: 'right' as const,
-        labels: { color: '#64748b', padding: 8, font: { size: 10 } },
+        labels: { color: '#71717a', padding: 8, font: { size: 10 } },
       },
     },
     cutout: '65%',
@@ -173,15 +176,15 @@ function ConversionDashboard({ compact = false }: ConversionDashboardProps) {
   return (
     <div className={`dashboard ${compact ? 'compact' : ''}`}>
       <div className="dashboard-header">
-        <h2>Conversion Rates Dashboard</h2>
+        <h2>Sales Performance</h2>
         <p className="dashboard-subtitle">
-          Track bounce rates, funnel performance, and conversion metrics
+          From first visit to purchase—how GreenLeaf converts eco-conscious shoppers
         </p>
       </div>
 
       {/* Metric Cards */}
       <div className="metric-cards">
-        <div className="metric-card warning">
+        <div className={`metric-card ${metrics.bounceRate > 30 ? 'warning' : ''}`}>
           <div className="metric-icon bounce">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
               <path
@@ -192,7 +195,7 @@ function ConversionDashboard({ compact = false }: ConversionDashboardProps) {
           </div>
           <div className="metric-info">
             <span className="metric-value">{metrics.bounceRate}%</span>
-            <span className="metric-label">Bounce Rate</span>
+            <span className="metric-label">Quick Exits</span>
           </div>
         </div>
 
@@ -207,7 +210,7 @@ function ConversionDashboard({ compact = false }: ConversionDashboardProps) {
           </div>
           <div className="metric-info">
             <span className="metric-value">{metrics.overallConversionRate}%</span>
-            <span className="metric-label">Conversion Rate</span>
+            <span className="metric-label">Buyers</span>
           </div>
         </div>
 
@@ -225,7 +228,7 @@ function ConversionDashboard({ compact = false }: ConversionDashboardProps) {
             <span className="metric-value">
               ${metrics.revenueMetrics.totalRevenue.toLocaleString()}
             </span>
-            <span className="metric-label">Total Revenue</span>
+            <span className="metric-label">Revenue</span>
           </div>
         </div>
 
@@ -243,7 +246,7 @@ function ConversionDashboard({ compact = false }: ConversionDashboardProps) {
             <span className="metric-value">
               ${metrics.revenueMetrics.avgOrderValue}
             </span>
-            <span className="metric-label">Avg Order Value</span>
+            <span className="metric-label">Avg Order</span>
           </div>
         </div>
       </div>
@@ -251,7 +254,7 @@ function ConversionDashboard({ compact = false }: ConversionDashboardProps) {
       {/* Charts */}
       <div className={`charts-grid ${compact ? 'compact-grid' : ''}`}>
         <div className="chart-card wide">
-          <h3>Conversion Funnel</h3>
+          <h3>Purchase Funnel</h3>
           <div className="chart-container">
             <Bar data={funnelData} options={chartOptions} />
           </div>
@@ -259,7 +262,7 @@ function ConversionDashboard({ compact = false }: ConversionDashboardProps) {
 
         {!compact && (
           <div className="chart-card">
-            <h3>Daily Conversion Trend</h3>
+            <h3>Conversion Trend (14 days)</h3>
             <div className="chart-container">
               <Line data={dailyData} options={lineOptions} />
             </div>
@@ -267,25 +270,53 @@ function ConversionDashboard({ compact = false }: ConversionDashboardProps) {
         )}
 
         <div className="chart-card">
-          <h3>User Engagement</h3>
+          <h3>Visitor Outcomes</h3>
           <div className="chart-container doughnut">
             <Doughnut data={bounceVsConversionData} options={doughnutOptions} />
           </div>
         </div>
       </div>
 
+      {/* Recommendations Section */}
+      {!compact && recommendations.length > 0 && (
+        <div className="recommendations-card">
+          <div className="recommendations-header">
+            <div className="recommendations-icon">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+            </div>
+            <div>
+              <h3>Growth Opportunities</h3>
+              <p className="recommendations-subtitle">Actions to boost your conversion rate</p>
+            </div>
+          </div>
+          <div className="recommendations-list">
+            {recommendations.map((rec, i) => (
+              <div key={i} className={`recommendation-item ${rec.priority}`}>
+                <div className="recommendation-priority">{rec.priority}</div>
+                <div className="recommendation-content">
+                  <h4>{rec.title}</h4>
+                  <p>{rec.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Funnel Drop-off Table (only in full view) */}
       {!compact && (
         <div className="data-table-card">
-          <h3>Funnel Step Analysis</h3>
+          <h3>Funnel Breakdown</h3>
           <table className="data-table">
             <thead>
               <tr>
                 <th>Step</th>
-                <th>Users Entered</th>
-                <th>Users Completed</th>
-                <th>Drop-off Rate</th>
-                <th>Status</th>
+                <th>Entered</th>
+                <th>Completed</th>
+                <th>Lost</th>
+                <th>Health</th>
               </tr>
             </thead>
             <tbody>
@@ -297,22 +328,22 @@ function ConversionDashboard({ compact = false }: ConversionDashboardProps) {
                   </td>
                   <td>{step.entered.toLocaleString()}</td>
                   <td>{step.completed.toLocaleString()}</td>
-                  <td>{step.dropOffRate}%</td>
+                  <td className="text-danger">-{step.dropOffRate}%</td>
                   <td>
                     <span
                       className={`status-badge ${
-                        step.dropOffRate > 30
+                        step.dropOffRate > 35
                           ? 'critical'
-                          : step.dropOffRate > 20
+                          : step.dropOffRate > 25
                           ? 'warning'
                           : 'good'
                       }`}
                     >
-                      {step.dropOffRate > 30
-                        ? 'Critical'
-                        : step.dropOffRate > 20
-                        ? 'Needs Work'
-                        : 'Healthy'}
+                      {step.dropOffRate > 35
+                        ? 'Leaking'
+                        : step.dropOffRate > 25
+                        ? 'Okay'
+                        : 'Strong'}
                     </span>
                   </td>
                 </tr>
@@ -325,7 +356,7 @@ function ConversionDashboard({ compact = false }: ConversionDashboardProps) {
       {/* Funnel Visualization */}
       {!compact && (
         <div className="funnel-visual-card">
-          <h3>Visual Funnel</h3>
+          <h3>Conversion Flow</h3>
           <div className="funnel-visual">
             {metrics.funnelSteps.map((step, i) => {
               const widthPercent = (step.entered / metrics.funnelSteps[0].entered) * 100;
@@ -361,6 +392,76 @@ function ConversionDashboard({ compact = false }: ConversionDashboardProps) {
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr);
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+interface Recommendation {
+  priority: 'high' | 'medium' | 'low';
+  title: string;
+  description: string;
+}
+
+function generateRecommendations(metrics: any): Recommendation[] {
+  const recommendations: Recommendation[] = [];
+
+  // Check bounce rate
+  if (metrics.bounceRate > 35) {
+    recommendations.push({
+      priority: 'high',
+      title: 'Fix your landing page',
+      description: `${metrics.bounceRate}% leave immediately. Test a hero image showing product impact (e.g., "This order plants 3 trees") instead of generic product shots.`,
+    });
+  } else if (metrics.bounceRate > 20) {
+    recommendations.push({
+      priority: 'medium',
+      title: 'Speed up page load',
+      description: 'Compress images and lazy-load below-fold content. Every 1 second of load time costs you 7% conversions.',
+    });
+  }
+
+  // Check funnel steps
+  const checkoutStep = metrics.funnelSteps.find((s: any) => s.step === 'Begin Checkout');
+  if (checkoutStep && checkoutStep.dropOffRate > 35) {
+    recommendations.push({
+      priority: 'high',
+      title: 'Simplify checkout',
+      description: `${checkoutStep.dropOffRate}% abandon at checkout. Add guest checkout, show trust badges, and display "Free returns on all eco-products."`,
+    });
+  }
+
+  const cartStep = metrics.funnelSteps.find((s: any) => s.step === 'Add to Cart');
+  if (cartStep && cartStep.dropOffRate > 30) {
+    recommendations.push({
+      priority: 'high',
+      title: 'Make "Add to Cart" irresistible',
+      description: 'Show low-stock alerts and carbon savings on product pages. "Only 3 left" and "Saves 2kg of CO2" create urgency.',
+    });
+  }
+
+  // Check AOV
+  if (metrics.revenueMetrics.avgOrderValue < 50) {
+    recommendations.push({
+      priority: 'medium',
+      title: 'Increase order value',
+      description: `Average order is $${metrics.revenueMetrics.avgOrderValue}. Add a "Frequently bought together" bundle at 10% off to boost cart size.`,
+    });
+  }
+
+  // Check overall conversion
+  if (metrics.overallConversionRate < 3) {
+    recommendations.push({
+      priority: 'high',
+      title: 'Recover lost sales',
+      description: 'Set up abandoned cart emails with a 10% "Come back" discount. Include the exact items they left behind.',
+    });
+  } else if (metrics.overallConversionRate > 5) {
+    recommendations.push({
+      priority: 'low',
+      title: "You're doing well—now experiment",
+      description: 'Strong conversion rate. A/B test premium upsells like "Carbon neutral shipping (+$2)" to grow revenue per customer.',
+    });
+  }
+
+  return recommendations.slice(0, 3);
 }
 
 export default ConversionDashboard;

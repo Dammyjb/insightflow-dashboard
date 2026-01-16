@@ -10,24 +10,28 @@ function Header({ activeView, onViewChange, theme, onThemeToggle }: HeaderProps)
     <header className="header">
       <div className="header-left">
         <div className="logo">
-          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <rect width="32" height="32" rx="8" fill="url(#gradient)" />
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+            <rect width="36" height="36" rx="10" fill="#10b981" />
             <path
-              d="M8 20L13 15L17 19L24 12"
+              d="M18 8c-5.5 0-10 4.5-10 10s4.5 10 10 10c1.5 0 3-.3 4.3-.9"
+              stroke="white"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              fill="none"
+            />
+            <path
+              d="M18 12v6l4 2"
               stroke="white"
               strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
-            <circle cx="24" cy="12" r="2" fill="white" />
-            <defs>
-              <linearGradient id="gradient" x1="0" y1="0" x2="32" y2="32">
-                <stop stopColor="#6366f1" />
-                <stop offset="1" stopColor="#8b5cf6" />
-              </linearGradient>
-            </defs>
+            <circle cx="26" cy="12" r="4" fill="#34d399" stroke="white" strokeWidth="2" />
           </svg>
-          <span className="logo-text">InsightFlow</span>
+          <div className="logo-text-group">
+            <span className="logo-text">GreenLeaf</span>
+            <span className="logo-badge">Analytics</span>
+          </div>
         </div>
 
         <nav className="nav-tabs">
@@ -87,7 +91,7 @@ function Header({ activeView, onViewChange, theme, onThemeToggle }: HeaderProps)
 
         <span className="last-updated">
           <span className="status-dot"></span>
-          Live · {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          Live
         </span>
       </div>
     </header>
