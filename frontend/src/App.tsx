@@ -1,18 +1,37 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import UserJourneyDashboard from './components/UserJourneyDashboard';
 import ConversionDashboard from './components/ConversionDashboard';
 import AIBot from './components/AIBot';
 import Header from './components/Header';
 
 type DashboardView = 'journey' | 'conversion' | 'synoptic';
+type Theme = 'dark' | 'light';
 
 function App() {
   const [activeView, setActiveView] = useState<DashboardView>('synoptic');
   const [isBotOpen, setIsBotOpen] = useState(false);
+  const [theme, setTheme] = useState<Theme>(() => {
+    const saved = localStorage.getItem('insightflow-theme');
+    return (saved as Theme) || 'dark';
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('insightflow-theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
 
   return (
     <div className="app">
-      <Header activeView={activeView} onViewChange={setActiveView} />
+      <Header
+        activeView={activeView}
+        onViewChange={setActiveView}
+        theme={theme}
+        onThemeToggle={toggleTheme}
+      />
 
       <main className="main-content">
         {activeView === 'synoptic' && (
