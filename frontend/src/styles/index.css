@@ -1693,3 +1693,228 @@ body {
     gap: 24px;
   }
 }
+
+/* ===================================
+   Summary Banner
+   =================================== */
+.summary-banner {
+  max-width: 1800px;
+  margin: 0 auto 24px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-default);
+  padding: 24px;
+  background-image: var(--gradient-card);
+}
+
+.summary-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.summary-title h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+  letter-spacing: -0.02em;
+}
+
+.summary-subtitle {
+  font-size: 0.928rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.health-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--bg-elevated);
+  border: 3px solid var(--border-default);
+  transition: var(--transition-normal);
+}
+
+.health-score.excellent {
+  border-color: var(--success);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+}
+
+.health-score.good {
+  border-color: var(--warning);
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+}
+
+.health-score.needs-work {
+  border-color: var(--danger);
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+}
+
+.health-score .score-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.health-score .score-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-top: 2px;
+}
+
+.summary-metrics {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
+}
+
+.summary-metric {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  transition: var(--transition-fast);
+}
+
+.summary-metric:hover {
+  border-color: var(--border-light);
+  transform: translateY(-2px);
+}
+
+.summary-metric.alert {
+  border-color: var(--danger);
+  background: var(--danger-bg);
+}
+
+.summary-metric .metric-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.summary-metric .metric-icon.blue {
+  background: var(--info-bg);
+  color: var(--info);
+}
+
+.summary-metric .metric-icon.green {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.summary-metric .metric-icon.purple {
+  background: rgba(139, 92, 246, 0.12);
+  color: #8b5cf6;
+}
+
+.summary-metric .metric-icon.orange {
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+
+.summary-metric .metric-icon.red {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.summary-metric .metric-icon.teal {
+  background: rgba(20, 184, 166, 0.12);
+  color: #14b8a6;
+}
+
+.summary-metric .metric-icon.cyan {
+  background: rgba(6, 182, 212, 0.12);
+  color: #06b6d4;
+}
+
+.summary-metric .metric-data {
+  display: flex;
+  flex-direction: column;
+}
+
+.summary-metric .metric-number {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.summary-metric .metric-name {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Summary Banner Responsive */
+@media (max-width: 1200px) {
+  .summary-metrics {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .summary-banner {
+    padding: 16px;
+  }
+
+  .summary-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .health-score {
+    width: 64px;
+    height: 64px;
+  }
+
+  .health-score .score-value {
+    font-size: 1.5rem;
+  }
+
+  .summary-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .summary-metric {
+    padding: 12px;
+  }
+
+  .summary-metric .metric-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .summary-metric .metric-number {
+    font-size: 1rem;
+  }
+}
+
+/* Follow-up suggestions styling */
+.suggested-questions.follow-up {
+  background: var(--bg-surface);
+}
+
+.suggested-questions.follow-up p {
+  color: var(--brand-primary);
+  font-weight: 500;
+}

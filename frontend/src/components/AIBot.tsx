@@ -13,23 +13,32 @@ interface AIBotProps {
 }
 
 const SUGGESTED_QUESTIONS = [
+  "Give me a quick performance summary",
+  "What's my biggest opportunity right now?",
   "Why are customers leaving at checkout?",
-  "How can I reduce my bounce rate?",
-  "What's causing the high churn rate?",
-  "Give me a summary of today's performance",
+  "How can I increase my average order value?",
 ];
+
+const FOLLOW_UP_SUGGESTIONS: Record<string, string[]> = {
+  churn: ["How do I re-engage lost customers?", "What loyalty programs work best?"],
+  checkout: ["Show me cart abandonment tips", "What's the ideal checkout flow?"],
+  conversion: ["How do I optimize my funnel?", "What's a good conversion rate?"],
+  summary: ["What should I focus on first?", "Show me trends over time"],
+  default: ["Give me actionable insights", "What are industry benchmarks?"],
+};
 
 function AIBot({ isOpen, onClose }: AIBotProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
       role: 'assistant',
-      content: "Hi! I'm your analytics assistant. Ask me anything about your GreenLeaf store performance—customer behavior, sales trends, or how to improve your metrics.",
+      content: "Hey there! I'm Leaf, your analytics companion. I can help you understand your store's performance, spot opportunities, and give you actionable recommendations. What would you like to know?",
       timestamp: new Date(),
     },
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [lastTopic, setLastTopic] = useState<string>('default');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -56,6 +65,10 @@ function AIBot({ isOpen, onClose }: AIBotProps) {
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
+
+    // Detect topic for follow-up suggestions
+    const topic = detectTopic(text.trim());
+    setLastTopic(topic);
 
     try {
       const response = await fetch('/api/ai/chat', {
@@ -110,10 +123,11 @@ function AIBot({ isOpen, onClose }: AIBotProps) {
       {
         id: 'welcome-new',
         role: 'assistant',
-        content: "Chat cleared. What would you like to know about your GreenLeaf analytics?",
+        content: "Fresh start! What would you like to explore about your store's performance?",
         timestamp: new Date(),
       },
     ]);
+    setLastTopic('default');
   };
 
   if (!isOpen) return null;
@@ -191,12 +205,23 @@ function AIBot({ isOpen, onClose }: AIBotProps) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Suggested Questions - only show at start */}
-      {messages.length <= 1 && (
+      {/* Suggested Questions - show at start or follow-ups after conversation */}
+      {messages.length <= 1 ? (
         <div className="suggested-questions">
           <p>Try asking:</p>
           <div className="suggestions-list">
             {SUGGESTED_QUESTIONS.map((q, i) => (
+              <button key={i} onClick={() => sendMessage(q)} className="suggestion-chip">
+                {q}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : !isLoading && (
+        <div className="suggested-questions follow-up">
+          <p>Follow up:</p>
+          <div className="suggestions-list">
+            {(FOLLOW_UP_SUGGESTIONS[lastTopic] || FOLLOW_UP_SUGGESTIONS.default).map((q, i) => (
               <button key={i} onClick={() => sendMessage(q)} className="suggestion-chip">
                 {q}
               </button>
@@ -232,6 +257,16 @@ function AIBot({ isOpen, onClose }: AIBotProps) {
       </div>
     </div>
   );
+}
+
+// Detect the topic from user question for follow-up suggestions
+function detectTopic(question: string): string {
+  const q = question.toLowerCase();
+  if (q.includes('churn') || q.includes('leaving') || q.includes('lost') || q.includes('retention')) return 'churn';
+  if (q.includes('checkout') || q.includes('cart') || q.includes('abandon')) return 'checkout';
+  if (q.includes('conversion') || q.includes('sales') || q.includes('revenue') || q.includes('funnel')) return 'conversion';
+  if (q.includes('summary') || q.includes('overview') || q.includes('performance')) return 'summary';
+  return 'default';
 }
 
 // Generate contextual responses based on question keywords
@@ -295,24 +330,52 @@ But there's always room to improve:
 3. Test offering free shipping at a threshold ($75+)`;
   }
 
-  if (q.includes('summary') || q.includes('overview') || q.includes('performance') || q.includes('today')) {
-    return `**GreenLeaf Performance Summary**
+  if (q.includes('summary') || q.includes('overview') || q.includes('performance') || q.includes('today') || q.includes('quick')) {
+    return `**GreenLeaf Performance at a Glance**
 
-📊 **Traffic & Engagement**
-• 41 active shoppers today
-• Average browse time: 12m 27s (very engaged!)
-• 5 pages where customers exit
+**What's Going Well:**
+- 1,247 active shoppers browsing your store
+- Strong engagement: 7+ minutes average session
+- Healthy 15% overall conversion rate
+- $24,567 in revenue with $157 AOV
 
-💰 **Sales**
-• Conversion rate: 47% (excellent)
-• Revenue: $24,500
-• Avg order: $68
+**Needs Attention:**
+- 23% churn rate (aim for under 20%)
+- Checkout step losing 38% of customers
+- Cart page has 12% drop-off
 
-⚠️ **Areas to Watch**
-• Churn rate at 27% (target: <20%)
-• Checkout drop-off at 38%
+**Quick Win:** Add a progress bar to checkout - stores see 10-15% improvement from this simple change.`;
+  }
 
-**Top Priority:** Focus on checkout optimization—simplifying this step could boost revenue by 10-15%.`;
+  if (q.includes('opportunity') || q.includes('biggest') || q.includes('priority') || q.includes('focus')) {
+    return `**Your Biggest Opportunity: Checkout Optimization**
+
+You're losing 38% of customers at checkout - that's your #1 revenue leak.
+
+**Why it matters:** With 340 people reaching checkout but only 210 completing, you're leaving ~$20K/month on the table.
+
+**3 Quick Fixes:**
+1. **Add guest checkout** - 23% of abandonments are due to forced signup
+2. **Show all costs upfront** - No surprises at the final step
+3. **Add trust badges** - Security icons increase completion by 17%
+
+**Next priority:** After checkout, focus on your 23% churn rate with a loyalty program.`;
+  }
+
+  if (q.includes('order value') || q.includes('aov') || q.includes('basket') || q.includes('spend more')) {
+    return `**Increasing Your Average Order Value ($157 currently)**
+
+**Quick Wins:**
+1. **Free shipping threshold** at $175 - "You're $18 away from free shipping!"
+2. **Bundle deals** - "Complete the sustainable set" sections
+3. **Smart upsells** - Show complementary products at cart
+
+**What works for eco-brands:**
+- "Add a tree planting" (+$5 donation option)
+- Subscription savings (10% off recurring orders)
+- Bulk discounts on consumables
+
+**Realistic target:** $175-185 AOV within 30 days using these tactics.`;
   }
 
   if (q.includes('improve') || q.includes('better') || q.includes('increase') || q.includes('help')) {
@@ -333,18 +396,34 @@ Every 1-second delay costs 7% in conversions. Compress images and lazy-load cont
 Want me to dive deeper into any of these?`;
   }
 
+  if (q.includes('benchmark') || q.includes('industry') || q.includes('compare') || q.includes('average')) {
+    return `**How You Compare to Industry Benchmarks**
+
+| Metric | Your Store | Industry Avg | Status |
+|--------|-----------|--------------|--------|
+| Conversion Rate | 15% | 2-3% | Excellent |
+| Bounce Rate | 24% | 40-60% | Great |
+| Churn Rate | 23% | 15-20% | Needs work |
+| AOV | $157 | $120 | Above avg |
+| Session Duration | 7min | 3-4min | Excellent |
+
+**Key insight:** Your engagement metrics are stellar - people love browsing. Focus on retention to match your other strong numbers.`;
+  }
+
   // Default response
-  return `I can help you understand your GreenLeaf store metrics! Here's what I can analyze:
+  return `I can help you make sense of your GreenLeaf analytics! Here's what I'm great at:
 
-• **Customer Journey** - Where shoppers spend time and where they leave
-• **Conversion Funnel** - How visitors become buyers
-• **Revenue Metrics** - Sales, order values, and trends
-• **Churn & Retention** - Why customers leave and how to keep them
+**Quick Analysis:**
+- Performance summaries and health checks
+- Identifying your biggest opportunities
+- Explaining what metrics mean and why they matter
 
-Try asking something like:
-• "Why is my churn rate so high?"
-• "How can I improve checkout conversion?"
-• "Give me a performance summary"`;
+**Strategic Advice:**
+- How to reduce cart abandonment
+- Ways to increase order value
+- Tactics to improve customer retention
+
+Try asking: "What's my biggest opportunity right now?" or "Give me a quick summary"`;
 }
 
 export default AIBot;

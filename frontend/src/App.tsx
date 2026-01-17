@@ -3,6 +3,7 @@ import UserJourneyDashboard from './components/UserJourneyDashboard';
 import ConversionDashboard from './components/ConversionDashboard';
 import AIBot from './components/AIBot';
 import Header from './components/Header';
+import { useJourneyMetrics, useConversionMetrics } from './hooks/useApi';
 
 type DashboardView = 'journey' | 'conversion' | 'synoptic';
 type Theme = 'dark' | 'light';
@@ -69,6 +70,10 @@ function App() {
     return (saved as Theme) || 'dark';
   });
 
+  // Fetch metrics for summary banner
+  const { data: journeyMetrics } = useJourneyMetrics();
+  const { data: conversionMetrics } = useConversionMetrics();
+
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('insightflow-theme', theme);
@@ -77,6 +82,28 @@ function App() {
   const toggleTheme = () => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
+
+  // Calculate health score based on metrics
+  const getHealthScore = () => {
+    if (!journeyMetrics || !conversionMetrics) return null;
+    let score = 70; // Base score
+
+    // Good conversion rate adds points
+    if (conversionMetrics.overallConversionRate > 10) score += 10;
+    if (conversionMetrics.overallConversionRate > 20) score += 5;
+
+    // Low bounce rate adds points
+    if (conversionMetrics.bounceRate < 30) score += 5;
+    if (conversionMetrics.bounceRate < 20) score += 5;
+
+    // Churn rate affects score
+    if (journeyMetrics.churnRate > 25) score -= 10;
+    if (journeyMetrics.churnRate < 15) score += 5;
+
+    return Math.min(100, Math.max(0, score));
+  };
+
+  const healthScore = getHealthScore();
 
   return (
     <div className="app">
@@ -90,6 +117,93 @@ function App() {
       <main className="main-content">
         {activeView === 'synoptic' && (
           <>
+            {/* Data Summary Banner */}
+            {journeyMetrics && conversionMetrics && (
+              <div className="summary-banner">
+                <div className="summary-header">
+                  <div className="summary-title">
+                    <h2>Store Performance Overview</h2>
+                    <p className="summary-subtitle">Real-time insights for GreenLeaf Marketplace</p>
+                  </div>
+                  {healthScore !== null && (
+                    <div className={`health-score ${healthScore >= 80 ? 'excellent' : healthScore >= 60 ? 'good' : 'needs-work'}`}>
+                      <span className="score-value">{healthScore}</span>
+                      <span className="score-label">Health Score</span>
+                    </div>
+                  )}
+                </div>
+                <div className="summary-metrics">
+                  <div className="summary-metric">
+                    <span className="metric-icon blue">
+                      <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
+                      </svg>
+                    </span>
+                    <div className="metric-data">
+                      <span className="metric-number">{journeyMetrics.totalSessions.toLocaleString()}</span>
+                      <span className="metric-name">Active Shoppers</span>
+                    </div>
+                  </div>
+                  <div className="summary-metric">
+                    <span className="metric-icon green">
+                      <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
+                      </svg>
+                    </span>
+                    <div className="metric-data">
+                      <span className="metric-number">{conversionMetrics.overallConversionRate}%</span>
+                      <span className="metric-name">Conversion Rate</span>
+                    </div>
+                  </div>
+                  <div className="summary-metric">
+                    <span className="metric-icon purple">
+                      <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
+                      </svg>
+                    </span>
+                    <div className="metric-data">
+                      <span className="metric-number">${conversionMetrics.revenueMetrics.totalRevenue.toLocaleString()}</span>
+                      <span className="metric-name">Total Revenue</span>
+                    </div>
+                  </div>
+                  <div className="summary-metric">
+                    <span className="metric-icon orange">
+                      <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z" clipRule="evenodd" />
+                      </svg>
+                    </span>
+                    <div className="metric-data">
+                      <span className="metric-number">${conversionMetrics.revenueMetrics.avgOrderValue}</span>
+                      <span className="metric-name">Avg Order Value</span>
+                    </div>
+                  </div>
+                  <div className={`summary-metric ${journeyMetrics.churnRate > 20 ? 'alert' : ''}`}>
+                    <span className={`metric-icon ${journeyMetrics.churnRate > 20 ? 'red' : 'teal'}`}>
+                      <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
+                      </svg>
+                    </span>
+                    <div className="metric-data">
+                      <span className="metric-number">{journeyMetrics.churnRate}%</span>
+                      <span className="metric-name">Churn Rate</span>
+                    </div>
+                  </div>
+                  <div className="summary-metric">
+                    <span className="metric-icon cyan">
+                      <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                      </svg>
+                    </span>
+                    <div className="metric-data">
+                      <span className="metric-number">{Math.floor(journeyMetrics.avgSessionDuration / 60)}m {journeyMetrics.avgSessionDuration % 60}s</span>
+                      <span className="metric-name">Avg Session</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="synoptic-view">
               <div className="dashboard-panel">
                 <UserJourneyDashboard compact />

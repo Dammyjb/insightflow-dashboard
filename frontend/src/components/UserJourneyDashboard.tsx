@@ -91,20 +91,28 @@ function UserJourneyDashboard({ compact = false }: UserJourneyDashboardProps) {
     ],
   };
 
-  // Activity Breakdown Doughnut
+  // Activity Breakdown Doughnut - using a pleasing, diverse color palette
   const activityBreakdownData = {
     labels: metrics.activityBreakdown.slice(0, 5).map((a) => a.activity),
     datasets: [
       {
         data: metrics.activityBreakdown.slice(0, 5).map((a) => a.count),
         backgroundColor: [
-          'rgba(16, 185, 129, 0.8)',
-          'rgba(52, 211, 153, 0.8)',
-          'rgba(110, 231, 183, 0.8)',
-          'rgba(167, 243, 208, 0.8)',
-          'rgba(209, 250, 229, 0.8)',
+          'rgba(99, 102, 241, 0.85)',   // Indigo
+          'rgba(236, 72, 153, 0.85)',   // Pink
+          'rgba(34, 197, 94, 0.85)',    // Green
+          'rgba(251, 146, 60, 0.85)',   // Orange
+          'rgba(14, 165, 233, 0.85)',   // Sky blue
         ],
-        borderWidth: 0,
+        hoverBackgroundColor: [
+          'rgba(99, 102, 241, 1)',
+          'rgba(236, 72, 153, 1)',
+          'rgba(34, 197, 94, 1)',
+          'rgba(251, 146, 60, 1)',
+          'rgba(14, 165, 233, 1)',
+        ],
+        borderWidth: 2,
+        borderColor: 'rgba(255, 255, 255, 0.1)',
       },
     ],
   };
