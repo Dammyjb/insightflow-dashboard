@@ -632,6 +632,159 @@ api.get('/recommendations', async (c) => {
   }
 });
 
+// ============================================
+// AI CHAT ENDPOINT
+// ============================================
+
+api.post('/ai/chat', async (c) => {
+  const db = c.env.DB;
+  const cache = c.env.CACHE;
+  const ai = c.env.AI;
+
+  try {
+    const { message } = await c.req.json();
+
+    if (!message || typeof message !== 'string') {
+      return c.json({ error: 'Message is required' }, 400);
+    }
+
+    // Fetch current metrics for context
+    let journeyMetrics = await cache.get('journey_metrics', 'json') as JourneyMetrics | null;
+    let conversionMetrics = await cache.get('conversion_metrics', 'json') as ConversionMetrics | null;
+
+    // If not cached, fetch basic metrics
+    if (!journeyMetrics) {
+      const sessionsResult = await db.prepare(`
+        SELECT
+          COUNT(*) as total_sessions,
+          SUM(CASE WHEN is_churned = 1 THEN 1 ELSE 0 END) as churned_sessions,
+          AVG(CASE WHEN session_end IS NOT NULL
+              THEN (julianday(session_end) - julianday(session_start)) * 86400
+              ELSE 300 END) as avg_duration
+        FROM user_sessions
+      `).first();
+
+      const dropOffs = await db.prepare(`
+        SELECT page_path, COUNT(*) as drop_off_count,
+          ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM user_activities), 2) as drop_off_rate
+        FROM user_activities WHERE drop_off = 1
+        GROUP BY page_path ORDER BY drop_off_count DESC LIMIT 5
+      `).all();
+
+      journeyMetrics = {
+        totalSessions: (sessionsResult?.total_sessions as number) || 0,
+        avgSessionDuration: Math.round((sessionsResult?.avg_duration as number) || 0),
+        churnRate: sessionsResult?.total_sessions
+          ? Math.round(((sessionsResult.churned_sessions as number) / (sessionsResult.total_sessions as number)) * 100)
+          : 0,
+        dropOffPoints: (dropOffs.results || []).map(row => ({
+          page: row.page_path as string,
+          dropOffCount: row.drop_off_count as number,
+          dropOffRate: row.drop_off_rate as number,
+        })),
+        activityBreakdown: [],
+        timePerActivity: [],
+      };
+    }
+
+    if (!conversionMetrics) {
+      const bounceResult = await db.prepare(`
+        SELECT
+          COUNT(DISTINCT user_id) as total_users,
+          COUNT(DISTINCT CASE WHEN user_id IN (
+            SELECT user_id FROM conversion_events GROUP BY user_id HAVING COUNT(*) = 1
+          ) THEN user_id END) as bounced_users
+        FROM conversion_events
+      `).first();
+
+      const conversionResult = await db.prepare(`
+        SELECT
+          COUNT(DISTINCT user_id) as total_users,
+          COUNT(DISTINCT CASE WHEN event_type = 'purchase' AND completed = 1 THEN user_id END) as converted
+        FROM conversion_events
+      `).first();
+
+      const revenueResult = await db.prepare(`
+        SELECT SUM(revenue) as total_revenue, AVG(revenue) as avg_order_value
+        FROM conversion_events
+        WHERE event_type = 'purchase' AND completed = 1 AND revenue IS NOT NULL
+      `).first();
+
+      const funnelSteps = await db.prepare(`
+        SELECT step_name, step_order, users_entered, users_completed,
+          ROUND((users_entered - users_completed) * 100.0 / NULLIF(users_entered, 0), 1) as drop_off_rate
+        FROM conversion_funnel ORDER BY step_order
+      `).all();
+
+      const totalUsers = (bounceResult?.total_users as number) || 1;
+      const bouncedUsers = (bounceResult?.bounced_users as number) || 0;
+      const convertedUsers = (conversionResult?.converted as number) || 0;
+
+      conversionMetrics = {
+        bounceRate: Math.round((bouncedUsers / totalUsers) * 100),
+        overallConversionRate: Math.round((convertedUsers / totalUsers) * 100),
+        funnelSteps: (funnelSteps.results || []).map(row => ({
+          step: row.step_name as string,
+          stepOrder: row.step_order as number,
+          entered: row.users_entered as number,
+          completed: row.users_completed as number,
+          dropOffRate: row.drop_off_rate as number,
+        })),
+        dailyConversions: [],
+        revenueMetrics: {
+          totalRevenue: (revenueResult?.total_revenue as number) || 0,
+          avgOrderValue: Math.round((revenueResult?.avg_order_value as number) || 0),
+          conversionValue: 0,
+        },
+      };
+    }
+
+    // Build context for the AI
+    const context = `You are an analytics assistant for GreenLeaf, a sustainable e-commerce platform selling eco-friendly products.
+You help store owners understand their customer data and provide actionable recommendations.
+
+Current Store Metrics:
+- Active Shoppers: ${journeyMetrics.totalSessions}
+- Average Browse Time: ${Math.floor(journeyMetrics.avgSessionDuration / 60)}m ${journeyMetrics.avgSessionDuration % 60}s
+- Churn Rate: ${journeyMetrics.churnRate}% (customers who haven't returned in 30 days)
+- Bounce Rate: ${conversionMetrics.bounceRate}%
+- Overall Conversion Rate: ${conversionMetrics.overallConversionRate}%
+- Total Revenue: $${conversionMetrics.revenueMetrics.totalRevenue.toLocaleString()}
+- Average Order Value: $${conversionMetrics.revenueMetrics.avgOrderValue}
+
+Funnel Performance:
+${conversionMetrics.funnelSteps.map(s => `- ${s.step}: ${s.dropOffRate}% drop-off`).join('\n')}
+
+Top Exit Pages:
+${journeyMetrics.dropOffPoints.slice(0, 3).map(d => `- ${d.page || '/home'}: ${d.dropOffCount} exits (${d.dropOffRate}%)`).join('\n')}
+
+Respond concisely and helpfully. Focus on actionable insights. Use bullet points for recommendations.
+Keep responses under 200 words unless the user asks for detailed analysis.`;
+
+    // Call Workers AI
+    const response = await ai.run(
+      '@cf/meta/llama-3.1-8b-instruct' as Parameters<typeof ai.run>[0],
+      {
+        messages: [
+          { role: 'system', content: context },
+          { role: 'user', content: message },
+        ],
+        max_tokens: 500,
+      }
+    );
+
+    const aiResponse = (response as { response?: string }).response || "I couldn't process that request. Please try asking about your metrics, customer behavior, or conversion rates.";
+
+    return c.json({ response: aiResponse });
+  } catch (error) {
+    console.error('AI Chat error:', error);
+    return c.json({
+      error: 'Failed to process chat',
+      response: "I'm having trouble connecting right now. Please try again in a moment."
+    }, 500);
+  }
+});
+
 // Calculate overall health score (0-100)
 function calculateHealthScore(journey: JourneyMetrics, conversion: ConversionMetrics): number {
   let score = 100;
