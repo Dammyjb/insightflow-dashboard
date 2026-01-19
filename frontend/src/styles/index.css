@@ -1799,6 +1799,12 @@ body {
 .summary-metric.alert {
   border-color: var(--danger);
   background: var(--danger-bg);
+  animation: blink-alert 1.5s ease-in-out infinite;
+}
+
+@keyframes blink-alert {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 .summary-metric .metric-icon {
